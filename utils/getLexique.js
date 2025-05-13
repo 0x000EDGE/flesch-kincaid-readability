@@ -1,42 +1,29 @@
-function tsvToJson(tsv) {
-    const lines = tsv.split("\n");
-    const headers = lines[0].split("\t");
-    const headersLen = headers.length;
-    const result = new Array(lines.length - 1);
-
-    for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split("\t");
-        const obj = {};
-        for (let j = 0; j < headersLen; j++) {
-            obj[headers[j]] = values[j];
-        }
-        result[i - 1] = obj;
-    }
-
-    return result;
-}
-
-async function readTsvFile() {
-    try {
-        const res = await fetch("/data/Lexique383.tsv");
-        const text = await res.text();
-        return tsvToJson(text.trim());
-    } catch (err) {
-        console.error("Erreur de lecture du fichier :", err.message);
-        return null;
-    }
-}
-
+/**
+ * Récupère et transforme un fichier TSV en une table de hachage où les clés sont des mots
+ * en minuscule et les valeurs sont leur nombre de syllabes.
+ *
+ * @returns {object|null} - La table de hachage des mots avec leur nombre de syllabes, ou null en cas d'erreur.
+ */
 export async function getLexique() {
-    const lexiqueArray = await readTsvFile();
+    try {
+        const response = await fetch("/data/Lexique383.tsv"); // Récupération du fichier TSV
+        const tsvText = await response.text(); // Lecture du contenu du fichier
 
-    const lexiqueMap = Object.create(null);
+        // Transformation du texte TSV en table de hachage
+        const lexiqueTable = Object.create(null); // Crée une table de hachage vide
+        tsvText
+            .trim()
+            .split("\n")
+            .slice(1)
+            .forEach((line) => {
+                // Ignorer la première ligne (entêtes)
+                const [ortho, nbsyll] = line.split("\t"); // Séparation des colonnes
+                lexiqueTable[ortho.toLowerCase()] = parseInt(nbsyll); // Ajout du mot et de son nombre de syllabes
+            });
 
-    // On prépare une table de hachage (clé = mot en minuscule)
-    for (let i = 0; i < lexiqueArray.length; i++) {
-        const entry = lexiqueArray[i];
-        lexiqueMap[entry.ortho.toLowerCase()] = parseInt(entry.nbsyll);
+        return lexiqueTable; // Retourne la table de hachage
+    } catch (err) {
+        console.error("Erreur de lecture du fichier :", err.message); // Gestion des erreurs
+        return null; // Retourne null en cas d'erreur
     }
-
-    return lexiqueMap;
 }

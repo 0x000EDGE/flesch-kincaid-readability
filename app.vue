@@ -1,151 +1,202 @@
 <template>
+    <!-- Conteneur principal de la page -->
     <div
-        class="bg-surface-50 dark:bg-surface-950 min-h-screen p-8 flex flex-col gap-6"
+        class="min-h-screen bg-surface-50 dark:bg-surface-950 p-8 flex flex-col gap-6"
     >
+        <!-- Composant Toast pour afficher les messages (erreurs, succès, etc.) -->
+        <Toast />
+
+        <!-- Barre de navigation en haut de la page -->
         <AppTopbar />
 
-        <div class="flex flex-col w-full max-w-7xl mx-auto gap-6 flex-1">
+        <!-- Contenu central -->
+        <div class="flex flex-col flex-1 w-full max-w-7xl mx-auto gap-6">
+            <!-- Section principale contenant l’entrée utilisateur et les résultats -->
             <div
-                class="bg-surface-0 dark:bg-surface-900 p-6 rounded-2xl border border-surface-200 dark:border-surface-700 w-full flex-1 flex gap-6"
+                class="flex flex-1 gap-6 w-full p-6 rounded-2xl border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700"
             >
-                <!-- Zone de texte -->
+                <!-- Zone de saisie de texte -->
                 <div class="flex-1">
                     <FloatLabel variant="on" class="w-full h-full">
                         <Textarea
-                            id="input_text"
-                            v-model="text"
-                            style="resize: none"
+                            id="input-text"
+                            v-model="inputText"
                             class="w-full h-full"
+                            :invalid="hasTextError"
+                            style="resize: none"
+                            @value-change="resetResults"
                         />
-                        <label for="input_text">Votre texte</label>
+                        <label for="input-text">Votre texte</label>
                     </FloatLabel>
                 </div>
 
-                <!-- Résultats et bouton -->
+                <!-- Zone d'affichage des résultats et du bouton de calcul -->
                 <div class="w-1/3 flex flex-col">
-                    <div class="flex-1 flex flex-col gap-6">
-                        <!-- Affichage des résultats uniquement après calcul -->
+                    <div class="flex flex-1 flex-col gap-6 mt-5">
+                        <!-- Affichage des résultats si disponibles -->
                         <div
-                            v-if="result !== null"
-                            class="flex flex-col gap-2 items-center mt-5"
+                            v-if="readabilityResult"
+                            class="flex flex-col gap-2 items-center"
                         >
                             <span class="text-[3rem] font-bold">{{
-                                result.score.toFixed(2)
+                                readabilityResult.score
                             }}</span>
                             <span
                                 class="text-sm text-surface-500 text-center"
-                                >{{ result.grade }}</span
+                                >{{ readabilityResult.grade }}</span
                             >
-
-                            <div class="flex flex-col gap-2 mt-4">
-                                <span class="text-sm"
-                                    >Nombre de mots : {{ result.wordsNb }}</span
+                            <div class="flex flex-col gap-2 mt-4 text-sm">
+                                <span
+                                    >Nombre de mots :
+                                    {{ readabilityResult.wordsNb }}</span
                                 >
-                                <span class="text-sm"
+                                <span
                                     >Nombre de phrases :
-                                    {{ result.sentencesNb }}</span
+                                    {{ readabilityResult.sentencesNb }}</span
                                 >
-                                <span class="text-sm"
+                                <span
                                     >Nombre de syllabes :
-                                    {{ result.syllNb }}</span
+                                    {{ readabilityResult.syllNb }}</span
                                 >
                             </div>
                         </div>
 
-                        <!-- Message d'attente ou d’instruction -->
+                        <!-- Message par défaut si aucun résultat n’est encore affiché -->
                         <div
                             v-else
-                            class="text-sm text-surface-400 text-center mt-5"
+                            class="text-sm text-surface-400 text-center"
                         >
                             Entrez un texte puis cliquez sur "Calculer"
                         </div>
                     </div>
 
-                    <!-- Bouton de calcul -->
+                    <!-- Bouton pour déclencher l'analyse -->
                     <Button
                         label="Calculer"
-                        class="w-full"
-                        :loading="calculating"
-                        @click="startCalculate"
+                        class="w-full mt-6"
+                        :loading="isCalculating"
+                        :disabled="!inputText"
+                        @click="analyzeReadability"
                     />
                 </div>
             </div>
         </div>
 
+        <!-- Pied de page -->
         <AppFooter />
     </div>
 </template>
 
 <script setup>
-// Texte entré par l'utilisateur
-const text = ref("");
+// Importation du système de notifications (toast)
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
 
-// État de chargement du bouton
-const calculating = ref(false);
+// Texte saisi par l'utilisateur
+const inputText = ref("");
 
-// Résultat du calcul, null au départ pour éviter l'hydration mismatch
-const result = ref(null);
+// Booléen indiquant si le texte saisi est invalide (par ex. vide ou mal formé)
+const hasTextError = ref(false);
 
-const lexique = ref(null);
+// Indique si le système est en train de calculer les résultats
+const isCalculating = ref(false);
 
+// Résultats du calcul de lisibilité (score, niveau, nombre de mots, etc.)
+const readabilityResult = ref(null);
+
+// Dictionnaire phonétique pour la détection des syllabes
+const phoneticLexicon = ref(null);
+
+// Chargement initial : récupération du dictionnaire phonétique
 onMounted(async () => {
-    text.value = "";
-    lexique.value = await getLexique();
+    inputText.value = "";
+    phoneticLexicon.value = await getLexique(); // getLexique() est une fonction externe supposée renvoyer un lexique
 });
 
 /**
- * Calcule les indicateurs de lisibilité du texte et met à jour `result`
+ * Réinitialise les erreurs et les résultats affichés
  */
-const startCalculate = async () => {
-    calculating.value = true;
+const resetResults = () => {
+    hasTextError.value = false;
+    readabilityResult.value = null;
+};
 
-    const { countableWords, phoneticWords } = extractWords(text.value);
-
-    let syllTotal = 0;
-    for (let i = 0; i < phoneticWords.length; i++) {
-        const nb = countSyllabes(phoneticWords[i], lexique.value).nbsyll;
-        console.log(nb);
-        if (nb !== null) syllTotal += nb;
-    }
-
-    const sentencesTotal = countSentences(text.value);
-
+/**
+ * Calcule le score de lisibilité Flesch-Kincaid
+ * @param {number} sentences - Nombre de phrases
+ * @param {number} words - Nombre de mots
+ * @param {number} syllables - Nombre de syllabes
+ * @returns {string} - Score avec deux décimales
+ */
+const calculateReadabilityScore = (sentences, words, syllables) => {
     const score =
-        206.835 -
-        1.015 * (countableWords.length / sentencesTotal) -
-        84.6 * (syllTotal / countableWords.length);
+        206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words);
+    return score.toFixed(2);
+};
 
-    // Attribuer une note en fonction du score
-    let grade;
-    if (score >= 90) {
-        grade =
-            "Très facile à lire. Facilement compréhensible par un élève moyen de 11 ans.";
-    } else if (score >= 80) {
-        grade =
-            "Facile à lire. Anglais conversationnel pour les consommateurs.";
-    } else if (score >= 70) {
-        grade = "Plutôt facile à lire.";
-    } else if (score >= 60) {
-        grade =
-            "En clair. Facilement compréhensible par les élèves de 13 à 15 ans.";
-    } else if (score >= 50) {
-        grade = "Plutôt difficile à lire.";
-    } else if (score >= 30) {
-        grade = "Difficile à lire. Université ou Grande Ecole.";
-    } else {
-        grade =
-            "Très difficile à lire. Mieux compris par les diplômés universitaires.";
+/**
+ * Retourne un niveau de lecture basé sur le score Flesch
+ * @param {number} score
+ * @returns {string} - Description du niveau de difficulté
+ */
+const getReadingLevelFromScore = (score) => {
+    if (score >= 90) return "Très facile à lire. Élève moyen de 11 ans.";
+    else if (score >= 80) return "Facile à lire. Niveau conversationnel.";
+    else if (score >= 70) return "Plutôt facile à lire.";
+    else if (score >= 60) return "Clair. Pour les 13–15 ans.";
+    else if (score >= 50) return "Plutôt difficile à lire.";
+    else if (score >= 30) return "Difficile. Niveau universitaire.";
+    else return "Très difficile. Pour diplômés universitaires.";
+};
+
+/**
+ * Analyse le texte saisi et calcule les statistiques de lisibilité
+ */
+const analyzeReadability = async () => {
+    const totalSentences = countSentences(inputText.value); // Fonction externe pour compter les phrases
+
+    // Gestion d'erreur si aucun point final détecté
+    if (totalSentences === 0) {
+        hasTextError.value = true;
+        toast.add({
+            severity: "error",
+            summary: "Erreur",
+            detail: "Votre texte doit contenir au moins une phrase.",
+            life: 3000,
+        });
+        return;
     }
 
-    // Mise à jour des résultats
-    result.value = {
+    isCalculating.value = true;
+
+    // Extraction des mots et de leur forme phonétique
+    const { countableWords, phoneticWords } = extractWords(inputText.value); // Fonction externe à définir
+
+    // Calcul du nombre total de syllabes à partir du lexique
+    const totalSyllables = phoneticWords.reduce((sum, word) => {
+        const syllableCount = countSyllabes(
+            word,
+            phoneticLexicon.value,
+        )?.nbsyll; // Fonction externe
+        return syllableCount ? sum + syllableCount : sum;
+    }, 0);
+
+    // Calcul du score Flesch
+    const score = calculateReadabilityScore(
+        totalSentences,
+        countableWords.length,
+        totalSyllables,
+    );
+
+    // Enregistrement du résultat
+    readabilityResult.value = {
         wordsNb: countableWords.length,
-        sentencesNb: sentencesTotal,
-        syllNb: syllTotal,
-        score: score,
-        grade: `"${grade}"`,
+        sentencesNb: totalSentences,
+        syllNb: totalSyllables,
+        score,
+        grade: getReadingLevelFromScore(score),
     };
 
-    calculating.value = false;
+    isCalculating.value = false;
 };
 </script>
