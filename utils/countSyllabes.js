@@ -3,7 +3,7 @@
  * Le lexique doit être un objet où les clés sont des mots et les valeurs sont le nombre de syllabes.
  *
  * @param {string} inputWord - Le mot pour lequel on veut obtenir le nombre de syllabes.
- * @param {object} lexique - Un dictionnaire associant chaque mot à son nombre de syllabes.
+ * @param {object} lexique - Un dictionnaire associant chaque mot à son nombre de syllabes (voir fonction getLexique dans getLexique.js).
  * @returns {object} - Un objet contenant le mot et son nombre de syllabes.
  */
 export function countSyllabes(inputWord, lexique) {

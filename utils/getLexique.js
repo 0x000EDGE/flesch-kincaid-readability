@@ -6,39 +6,49 @@
  */
 export async function getLexique() {
     try {
+        // Récupère le contenu du fichier TSV situé dans le dossier public
         const response = await fetch("/data/Lexique383.tsv");
+
+        // Lit le corps de la réponse comme texte brut
         const text = await response.text();
 
+        // Découpe le texte en lignes, puis sépare la première ligne pour obtenir les en-têtes de colonnes
         const lines = text.trim().split("\n");
         const headers = lines[0].split("\t");
 
+        // Trouve les indices des colonnes "ortho" (mot orthographié) et "nbsyll" (nombre de syllabes)
         const orthoIndex = headers.indexOf("ortho");
         const nbSyllIndex = headers.indexOf("nbsyll");
 
-        // Vérifie la présence des colonnes essentielles
+        // Vérifie que les deux colonnes nécessaires sont présentes dans les en-têtes
         if (orthoIndex === -1 || nbSyllIndex === -1) {
             throw new Error(
                 "Colonnes 'ortho' ou 'nbsyll' manquantes dans le fichier TSV.",
             );
         }
 
+        // Initialise un objet sans prototype pour stocker les mots et leur nombre de syllabes
         const lexicon = Object.create(null);
 
-        // Parse les lignes une par une (on ignore la première, déjà traitée)
+        // Parcourt toutes les lignes (sauf la première) pour extraire les données mot/syllabes
         for (let i = 1; i < lines.length; i++) {
+            // Sépare chaque ligne en colonnes selon les tabulations
             const values = lines[i].trim().split("\t");
 
+            // Récupère le mot en minuscules et le nombre de syllabes
             const word = values[orthoIndex]?.toLowerCase();
             const syllables = parseInt(values[nbSyllIndex], 10);
 
-            // Ne conserve que les entrées valides
+            // Ajoute à l'objet seulement si le mot est non vide et le nombre de syllabes est un entier valide
             if (word && Number.isInteger(syllables)) {
                 lexicon[word] = syllables;
             }
         }
 
+        // Retourne l'objet contenant tous les mots et leur nombre de syllabes
         return lexicon;
     } catch (error) {
+        // En cas d'erreur (réseau, parsing, etc.), affiche un message et retourne null
         console.error("Erreur lors du chargement du lexique :", error.message);
         return null;
     }

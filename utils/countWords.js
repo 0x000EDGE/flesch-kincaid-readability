@@ -17,7 +17,7 @@ function isPhoneticallyRelevant(word) {
  * Le texte est analysé pour extraire les mots et les mots phoniquement pertinents.
  *
  * @param {string} text - Le texte à analyser.
- * @returns {object} - Un objet contenant deux tableaux : les mots comptables et les mots phoniquement pertinents.
+ * @returns {object} - Un objet contenant deux tableaux : les mots que l'on peut compter et les mots qui sont pertinents pour le comptage de syllabes.
  */
 export function extractWords(text) {
     const allWords = text.match(/[\p{L}\p{N}]+/gu) || []; // Extraction de tous les mots et nombres

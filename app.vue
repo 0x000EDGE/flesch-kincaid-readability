@@ -90,33 +90,33 @@
 </template>
 
 <script setup>
-// Importation du système de notifications (toast)
+// Importation du système de notifications (toast) de PrimeVue
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
 
-// Texte saisi par l'utilisateur
+// Texte saisi par l'utilisateur dans le champ de saisie
 const inputText = ref("");
 
-// Booléen indiquant si le texte saisi est invalide (par ex. vide ou mal formé)
+// Indique si une erreur est détectée dans le texte (ex. : vide, aucune phrase)
 const hasTextError = ref(false);
 
-// Indique si le système est en train de calculer les résultats
+// Indique si l'application est en train d'effectuer l'analyse (affiche un loader si nécessaire)
 const isCalculating = ref(false);
 
-// Résultats du calcul de lisibilité (score, niveau, nombre de mots, etc.)
+// Résultat de l'analyse de lisibilité (score, nombre de mots, syllabes, niveau, etc.)
 const readabilityResult = ref(null);
 
-// Dictionnaire phonétique pour la détection des syllabes
+// Contient le lexique phonétique chargé depuis un fichier externe (mot → nombre de syllabes)
 const phoneticLexicon = ref(null);
 
-// Chargement initial : récupération du dictionnaire phonétique
+// Lors du montage du composant, on vide le champ texte et on charge le dictionnaire phonétique
 onMounted(async () => {
     inputText.value = "";
-    phoneticLexicon.value = await getLexique(); // getLexique() est une fonction externe supposée renvoyer un lexique
+    phoneticLexicon.value = await getLexique(); // getLexique() retourne un objet { mot: nbSyllabes }
 });
 
 /**
- * Réinitialise les erreurs et les résultats affichés
+ * Réinitialise l'état de l'application (efface les erreurs et les anciens résultats)
  */
 const resetResults = () => {
     hasTextError.value = false;
@@ -124,11 +124,13 @@ const resetResults = () => {
 };
 
 /**
- * Calcule le score de lisibilité Flesch-Kincaid
- * @param {number} sentences - Nombre de phrases
- * @param {number} words - Nombre de mots
- * @param {number} syllables - Nombre de syllabes
- * @returns {string} - Score avec deux décimales
+ * Calcule le score de lisibilité Flesch-Kincaid en fonction du nombre de phrases, mots et syllabes
+ * Plus le score est élevé, plus le texte est facile à lire.
+ *
+ * @param {number} sentences - Nombre total de phrases
+ * @param {number} words - Nombre total de mots
+ * @param {number} syllables - Nombre total de syllabes
+ * @returns {string} - Score formaté avec deux décimales
  */
 const calculateReadabilityScore = (sentences, words, syllables) => {
     const score =
@@ -137,9 +139,10 @@ const calculateReadabilityScore = (sentences, words, syllables) => {
 };
 
 /**
- * Retourne un niveau de lecture basé sur le score Flesch
- * @param {number} score
- * @returns {string} - Description du niveau de difficulté
+ * Retourne une description du niveau de lecture en fonction du score Flesch obtenu
+ *
+ * @param {number} score - Score de lisibilité Flesch
+ * @returns {string} - Description du niveau de compréhension requis
  */
 const getReadingLevelFromScore = (score) => {
     if (score >= 90) return "Très facile à lire. Élève moyen de 11 ans.";
@@ -152,12 +155,18 @@ const getReadingLevelFromScore = (score) => {
 };
 
 /**
- * Analyse le texte saisi et calcule les statistiques de lisibilité
+ * Analyse le texte saisi par l'utilisateur :
+ * - Vérifie qu'il contient au moins une phrase
+ * - Extrait les mots et leur forme phonétique
+ * - Calcule le nombre total de syllabes
+ * - Évalue la lisibilité avec la formule Flesch-Kincaid
+ * - Génère une synthèse des résultats
  */
 const analyzeReadability = async () => {
-    const totalSentences = countSentences(inputText.value); // Fonction externe pour compter les phrases
+    // Compte le nombre de phrases (fonction externe supposée bien définie)
+    const totalSentences = countSentences(inputText.value);
 
-    // Gestion d'erreur si aucun point final détecté
+    // Affiche une erreur si le texte ne contient pas au moins une phrase valide
     if (totalSentences === 0) {
         hasTextError.value = true;
         toast.add({
@@ -171,10 +180,10 @@ const analyzeReadability = async () => {
 
     isCalculating.value = true;
 
-    // Extraction des mots et de leur forme phonétique
-    const { countableWords, phoneticWords } = extractWords(inputText.value); // Fonction externe à définir
+    // Extrait les mots exploitables (sans ponctuation, doublons, etc.) et leur forme phonétique
+    const { countableWords, phoneticWords } = extractWords(inputText.value); // Fonction externe
 
-    // Calcul du nombre total de syllabes à partir du lexique
+    // Calcule le nombre total de syllabes à l'aide du lexique phonétique
     const totalSyllables = phoneticWords.reduce((sum, word) => {
         const syllableCount = countSyllabes(
             word,
@@ -183,14 +192,14 @@ const analyzeReadability = async () => {
         return syllableCount ? sum + syllableCount : sum;
     }, 0);
 
-    // Calcul du score Flesch
+    // Calcule le score de lisibilité Flesch
     const score = calculateReadabilityScore(
         totalSentences,
         countableWords.length,
         totalSyllables,
     );
 
-    // Enregistrement du résultat
+    // Sauvegarde et affiche les résultats
     readabilityResult.value = {
         wordsNb: countableWords.length,
         sentencesNb: totalSentences,

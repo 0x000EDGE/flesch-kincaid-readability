@@ -12,7 +12,7 @@ const { isDarkMode, toggleDarkMode } = useLayout();
             <div class="flex gap-3 items-center">
                 <span class="flex flex-col md:text-left text-center"
                     ><span
-                        class="text-xl font-light text-surface-700 dark:text-surface-100 leading-none"
+                        class="text-xl text-surface-700 dark:text-surface-100 leading-none font-bold"
                         >Calculateur de lisibilité</span
                     >
                     <span class="text-sm font-medium text-primary leading-tight"
