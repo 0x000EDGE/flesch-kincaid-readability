@@ -2,6 +2,8 @@
 
 Ce dépôt contient le code d’une application web qui calcule le score de lisibilité d’un texte selon l’algorithme [Flesch-Kincaid](https://fr.wikipedia.org/wiki/Tests_de_lisibilit%C3%A9_Flesch-Kincaid).
 
+Lien de l'application déployée : [https://readability-mpt.vercel.app/](https://readability-mpt.vercel.app/)
+
 ## 🛠️ Technologies utilisées
 
 - **HTML / CSS**
