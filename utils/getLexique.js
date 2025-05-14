@@ -4,7 +4,7 @@
  *
  * @returns {Promise<Record<string, number> | null>} - Un objet { mot: nbSyllabes } ou null en cas d'erreur.
  */
-export async function loadLexique() {
+export async function getLexique() {
     try {
         const response = await fetch("/data/Lexique383.tsv");
         const text = await response.text();
