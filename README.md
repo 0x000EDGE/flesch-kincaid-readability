@@ -1,6 +1,6 @@
 # Calculateur de score de lisibilité
 
-Ce dépot contient le code d’une application web qui calcule le score de lisibilité d’un texte selon l’algorythme [Flesch-Kincaid](https://fr.wikipedia.org/wiki/Tests_de_lisibilit%C3%A9_Flesch-Kincaid).
+Ce dépôt contient le code d’une application web qui calcule le score de lisibilité d’un texte selon l’algorithme [Flesch-Kincaid](https://fr.wikipedia.org/wiki/Tests_de_lisibilit%C3%A9_Flesch-Kincaid).
 
 ## 🛠️ Technologies utilisées
 
@@ -33,7 +33,6 @@ Ce dépot contient le code d’une application web qui calcule le score de lisib
     Bibliothèque de composants UI basée sur Vue.js, qui propose des éléments préconçus (boutons, champs texte, cartes, etc.) avec un design professionnel et personnalisable.
 
     📚 [Documentation PrimeVue](https://primevue.org/)
-
 
 ## Structure du projet
 
@@ -71,8 +70,8 @@ flesch-kincaid/
 └── tsconfig.json           # Configuration TypeScript
 ```
 
-La partie “Algorithmique” du projet (chose étudiée pour le TIB) se trouve dans les fichiers javascript dans le dossier `utils` et est utilisé dans la partie `script` du fichier `app.vue` .
+La partie "Algorithmique" du projet (chose étudiée pour le TIB) se trouve dans les fichiers JavaScript du dossier `utils` et est utilisée dans la section `script` du fichier `app.vue`.
 
 ## Version console
 
-une version console du projet est également disponible dans le dépot : [flesch-kincaid-readability-console](https://github.com/0x000EDGE/flesch-kincaid-readability-console)
+Une version console du projet est également disponible dans le dépôt : [flesch-kincaid-readability-console](https://github.com/0x000EDGE/flesch-kincaid-readability-console)
