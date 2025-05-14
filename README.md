@@ -75,4 +75,4 @@ La partie “Algorithmique” du projet (chose étudiée pour le TIB) se trouve 
 
 ## Version console
 
-une version console du projet est également disponible dans le dépot :
+une version console du projet est également disponible dans le dépot : [flesch-kincaid-readability-console](https://github.com/0x000EDGE/flesch-kincaid-readability-console)
