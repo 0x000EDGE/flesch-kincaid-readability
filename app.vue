@@ -13,10 +13,10 @@
         <div class="flex flex-col flex-1 w-full max-w-7xl mx-auto gap-6">
             <!-- Section principale contenant l’entrée utilisateur et les résultats -->
             <div
-                class="flex flex-1 gap-6 w-full p-6 rounded-2xl border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700"
+                class="flex flex-1 flex-col md:flex-row gap-6 w-full p-6 rounded-2xl border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700"
             >
                 <!-- Zone de saisie de texte -->
-                <div class="flex-1">
+                <div class="md:flex-1">
                     <FloatLabel variant="on" class="w-full h-full">
                         <Textarea
                             id="input-text"
@@ -31,8 +31,10 @@
                 </div>
 
                 <!-- Zone d'affichage des résultats et du bouton de calcul -->
-                <div class="w-1/3 flex flex-col">
-                    <div class="flex flex-1 flex-col gap-6 mt-5">
+                <div class="w-full md:w-1/3 flex flex-col">
+                    <div
+                        class="flex flex-1 flex-col gap-6 mt-5 order-last md:order-first"
+                    >
                         <!-- Affichage des résultats si disponibles -->
                         <div
                             v-if="readabilityResult"
