@@ -10,7 +10,7 @@
             </div>
             <div class="flex gap-4">
                 <a
-                    href="https://github.com/primefaces/primevue"
+                    href="https://github.com/0x000EDGE/flesch-kincaid-readibility"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-surface-600 dark:text-surface-400 hover:text-primary transition-colors text-sm"
