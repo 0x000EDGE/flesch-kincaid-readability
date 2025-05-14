@@ -6,7 +6,7 @@
             class="flex justify-between items-center sm:flex-row flex-col gap-2"
         >
             <div class="text-sm text-surface-600 dark:text-surface-400">
-                MPT-A - 2024-2025 - Groupe 4
+                MPT-A - 2024-2025 - Groupe 2
             </div>
             <div class="flex gap-4">
                 <a

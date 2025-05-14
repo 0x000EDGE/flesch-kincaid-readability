@@ -49,12 +49,12 @@
                             >
                             <div class="flex flex-col gap-2 mt-4 text-sm">
                                 <span
-                                    >Nombre de mots :
-                                    {{ readabilityResult.wordsNb }}</span
-                                >
-                                <span
                                     >Nombre de phrases :
                                     {{ readabilityResult.sentencesNb }}</span
+                                >
+                                <span
+                                    >Nombre de mots :
+                                    {{ readabilityResult.wordsNb }}</span
                                 >
                                 <span
                                     >Nombre de syllabes :
